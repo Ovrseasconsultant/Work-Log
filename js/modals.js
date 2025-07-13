@@ -1,9 +1,5 @@
 // Modal Management Functions
 
-// Global variables for modal state
-let sessionToDelete = null;
-let sessionToEdit = null;
-
 // Modal open/close functions
 function openModal(modal) {
   if (!modal) return;
@@ -55,24 +51,9 @@ function handleEscapeKey(e) {
 
 // Session management functions
 function editSession(sessionId) {
-  console.log(
-    "editSession called with ID:",
-    sessionId,
-    "Type:",
-    typeof sessionId
-  );
-
-  // Convert to number if it's a string
-  const numericId =
-    typeof sessionId === "string" ? parseInt(sessionId, 10) : sessionId;
-
-  const session = allSessions.find((s) => s.id === numericId);
+  const session = allSessions.find((s) => s.id === sessionId);
   if (!session) {
-    console.error("Session not found:", numericId);
-    console.log(
-      "Available sessions:",
-      allSessions.map((s) => ({ id: s.id, type: typeof s.id }))
-    );
+    console.error("Session not found:", sessionId);
     return;
   }
 
@@ -89,23 +70,12 @@ function editSession(sessionId) {
       breakTimeInput.value = Math.round(session.breakTime / 60000);
   }
 
-  sessionToEdit = numericId;
+  sessionToEdit = sessionId;
   openModal(document.getElementById("edit-modal"));
 }
 
 function deleteSession(sessionId) {
-  console.log(
-    "deleteSession called with ID:",
-    sessionId,
-    "Type:",
-    typeof sessionId
-  );
-
-  // Convert to number if it's a string
-  const numericId =
-    typeof sessionId === "string" ? parseInt(sessionId, 10) : sessionId;
-
-  sessionToDelete = numericId;
+  sessionToDelete = sessionId;
   openModal(document.getElementById("confirm-modal"));
 }
 
@@ -180,12 +150,13 @@ function handleEditFormSubmit(e) {
     fetch(FORMSPREE_URL, {
       method: "POST",
       body: formData,
+      mode: "no-cors",
     })
       .then((response) => {
-        console.log("Update notification sent to Formspree");
+        // Formspree submission successful
       })
       .catch((error) => {
-        console.error("Error sending update notification to Formspree:", error);
+        // Silently handle errors - Formspree is optional
       });
   }
 
@@ -228,12 +199,13 @@ function handleDeleteConfirm() {
     fetch(FORMSPREE_URL, {
       method: "POST",
       body: formData,
+      mode: "no-cors",
     })
       .then((response) => {
-        console.log("Delete notification sent to Formspree");
+        // Formspree submission successful
       })
       .catch((error) => {
-        console.error("Error sending delete notification to Formspree:", error);
+        // Silently handle errors - Formspree is optional
       });
   }
 
@@ -301,6 +273,29 @@ function initializeModals() {
       if (modal) closeModal(modal);
     });
   });
+
+  // Add event listeners for edit and delete buttons
+  addSessionButtonListeners();
+}
+
+// Add event listeners for session action buttons
+function addSessionButtonListeners() {
+  // Use event delegation for dynamically created buttons
+  document.addEventListener("click", function (e) {
+    // Edit button
+    if (e.target.closest(".action-button-modern.edit")) {
+      const button = e.target.closest(".action-button-modern.edit");
+      const sessionId = parseInt(button.getAttribute("data-session-id"), 10);
+      editSession(sessionId);
+    }
+
+    // Delete button
+    if (e.target.closest(".action-button-modern.delete")) {
+      const button = e.target.closest(".action-button-modern.delete");
+      const sessionId = parseInt(button.getAttribute("data-session-id"), 10);
+      deleteSession(sessionId);
+    }
+  });
 }
 
 // Initialize when DOM is loaded
@@ -311,11 +306,3 @@ window.editSession = editSession;
 window.deleteSession = deleteSession;
 window.openModal = openModal;
 window.closeModal = closeModal;
-
-// Debug: Check if functions are available globally
-console.log("modals.js loaded - Functions available:", {
-  editSession: typeof window.editSession,
-  deleteSession: typeof window.deleteSession,
-  openModal: typeof window.openModal,
-  closeModal: typeof window.closeModal,
-});
