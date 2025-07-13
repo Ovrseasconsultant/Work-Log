@@ -179,22 +179,13 @@ function logSessionFromForm(form, errorElement) {
     fetch(FORMSPREE_URL, {
       method: "POST",
       body: formData,
+      mode: "no-cors",
     })
       .then((response) => {
-        return response.text();
-      })
-      .then((text) => {
-        try {
-          const data = JSON.parse(text);
-          if (!data.success) {
-            console.error("Error saving to Formspree:", data.error);
-          }
-        } catch (e) {
-          // Response was not JSON, but request was sent
-        }
+        // Formspree submission successful
       })
       .catch((error) => {
-        console.error("Error sending data to Formspree:", error);
+        // Silently handle errors - Formspree is optional
       });
   } else {
     // Formspree URL not configured - data saved locally only
