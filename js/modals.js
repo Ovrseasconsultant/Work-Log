@@ -63,11 +63,13 @@ function editSession(sessionId) {
     const startTimeInput = editForm.querySelector("#edit-start-time");
     const endTimeInput = editForm.querySelector("#edit-end-time");
     const breakTimeInput = editForm.querySelector("#edit-break-time");
+    const payRateInput = editForm.querySelector("#edit-pay-rate");
 
     if (startTimeInput) startTimeInput.value = session.startTime;
     if (endTimeInput) endTimeInput.value = session.endTime;
     if (breakTimeInput)
       breakTimeInput.value = Math.round(session.breakTime / 60000);
+    if (payRateInput) payRateInput.value = session.payRate || hourlyRate;
   }
 
   sessionToEdit = sessionId;
@@ -99,6 +101,8 @@ function handleEditFormSubmit(e) {
   const startTime = form.querySelector("#edit-start-time").value;
   const endTime = form.querySelector("#edit-end-time").value;
   const breakTime = parseInt(form.querySelector("#edit-break-time").value) || 0;
+  const payRate =
+    parseFloat(form.querySelector("#edit-pay-rate").value) || hourlyRate;
 
   const errorElement = form.querySelector("#edit-error-message");
   errorElement.textContent = "";
@@ -129,6 +133,7 @@ function handleEditFormSubmit(e) {
     endTime,
     duration: netDuration,
     breakTime: breakDuration,
+    payRate: payRate,
   };
 
   allSessions[sessionIndex] = updatedSession;
@@ -145,7 +150,8 @@ function handleEditFormSubmit(e) {
     formData.append("endTime", endTime);
     formData.append("duration", formatDuration(netDuration));
     formData.append("breakTime", breakTime);
-    formData.append("pay", calculatePay(netDuration).toFixed(2));
+    const sessionPay = (netDuration / (1000 * 60 * 60)) * payRate;
+    formData.append("pay", sessionPay.toFixed(2));
 
     fetch(FORMSPREE_URL, {
       method: "POST",
