@@ -27,7 +27,8 @@ function renderSessions() {
       const startTime = session.startTime;
       const endTime = session.endTime;
       const duration = formatDuration(session.duration);
-      const pay = calculatePay(session.duration);
+      const sessionPayRate = session.payRate || hourlyRate;
+      const pay = (session.duration / (1000 * 60 * 60)) * sessionPayRate;
       const breakMinutes = Math.round(session.breakTime / 60000);
 
       // Format date for display
@@ -77,7 +78,7 @@ function renderSessions() {
                 </div>
                 <div class="stat-item">
                   <p class="stat-label">Rate</p>
-                  <p class="stat-value rate">$${hourlyRate.toFixed(2)}</p>
+                  <p class="stat-value rate">$${sessionPayRate.toFixed(2)}</p>
                 </div>
                 <div class="stat-item">
                   <p class="stat-label">Pay</p>
@@ -118,7 +119,11 @@ function updateTotals() {
     (total, session) => total + session.duration,
     0
   );
-  const dailyTotalPay = calculatePay(dailyTotalDuration);
+  const dailyTotalPay = currentSessions.reduce((total, session) => {
+    const sessionPayRate = session.payRate || hourlyRate;
+    const sessionPay = (session.duration / (1000 * 60 * 60)) * sessionPayRate;
+    return total + sessionPay;
+  }, 0);
 
   dailyTotalTimeDisplay.textContent = formatDuration(dailyTotalDuration) + "h";
   dailyTotalPayDisplay.textContent = `$${dailyTotalPay.toFixed(2)}`;
@@ -132,7 +137,11 @@ function updateTotals() {
     (total, session) => total + session.duration,
     0
   );
-  const monthlyTotalPay = calculatePay(monthlyTotalDuration);
+  const monthlyTotalPay = monthlySessions.reduce((total, session) => {
+    const sessionPayRate = session.payRate || hourlyRate;
+    const sessionPay = (session.duration / (1000 * 60 * 60)) * sessionPayRate;
+    return total + sessionPay;
+  }, 0);
 
   monthlyTotalTimeDisplay.textContent = formatDuration(monthlyTotalDuration);
   monthlyTotalPayDisplay.textContent = `$${monthlyTotalPay.toFixed(2)}`;
