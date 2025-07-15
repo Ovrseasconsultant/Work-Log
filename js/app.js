@@ -131,6 +131,9 @@ function logSessionFromForm(form, errorElement) {
   const endTime = form.querySelector("#end-time, #modal-end-time").value;
   const breakTime =
     parseInt(form.querySelector("#break-time, #modal-break-time").value) || 0;
+  const payRate =
+    parseFloat(form.querySelector("#pay-rate, #modal-pay-rate").value) ||
+    hourlyRate;
 
   errorElement.textContent = "";
   if (!startTime || !endTime) {
@@ -147,7 +150,7 @@ function logSessionFromForm(form, errorElement) {
   const duration = endDateTime - startDateTime;
   const breakDuration = breakTime * 60 * 1000; // Convert minutes to milliseconds
   const netDuration = duration - breakDuration;
-  const pay = calculatePay(netDuration);
+  const pay = (netDuration / (1000 * 60 * 60)) * payRate;
 
   const session = {
     id: Date.now(),
@@ -156,6 +159,7 @@ function logSessionFromForm(form, errorElement) {
     endTime,
     duration: netDuration,
     breakTime: breakDuration,
+    payRate: payRate,
   };
   allSessions.push(session);
   saveData();
